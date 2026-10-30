@@ -916,7 +916,7 @@ body: Stack(
     ),
     Positioned.fill(
       child: Container(
-        color: Colors.white.withValues(alpha: 0.82),
+        color: Colors.white.withValues(alpha: 0.62),
       ),
     ),
     RefreshIndicator(
@@ -928,16 +928,33 @@ body: Stack(
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 380),
               switchInCurve: Curves.easeOutCubic,
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 0.035),
-                    end: Offset.zero,
-                  ).animate(animation),
-                  child: child,
-                ),
-              ),
+              transitionBuilder: (child, animation) {
+                final eased = CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                );
+                return FadeTransition(
+                  opacity: eased,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(-0.16, 0),
+                      end: Offset.zero,
+                    ).animate(eased),
+                    child: AnimatedBuilder(
+                      animation: eased,
+                      child: child,
+                      builder: (context, child) => Transform(
+                        alignment: Alignment.centerLeft,
+                        transform: Matrix4.identity()
+                          ..setEntry(3, 2, 0.0015)
+                          ..rotateY((1 - eased.value) * -0.12)
+                          ..scale(0.96 + (0.04 * eased.value)),
+                        child: child,
+                      ),
+                    ),
+                  ),
+                );
+              },
               child: KeyedSubtree(
                 key: ValueKey(_selectedCategory),
                 child: _buildWelcomeCard(),
@@ -1020,9 +1037,25 @@ body: Stack(
                     child: child,
                   ),
                 ),
-                child: Column(
+                child: LayoutBuilder(
                   key: ValueKey('$_selectedCategory-$_selectedFilter-${visible.length}'),
-                  children: visible.map(_buildArticleCard).toList(),
+                  builder: (context, constraints) {
+                    final columns = constraints.maxWidth >= 900 ? 2 : 1;
+                    final spacing = 14.0;
+                    final cardWidth = columns == 1
+                        ? constraints.maxWidth
+                        : (constraints.maxWidth - spacing) / 2;
+                    return Wrap(
+                      spacing: spacing,
+                      runSpacing: 8,
+                      children: visible.map((article) {
+                        return SizedBox(
+                          width: cardWidth,
+                          child: _buildArticleCard(article),
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
               ),
             if (_error != null && _articles.isNotEmpty)
@@ -1051,6 +1084,39 @@ body: Stack(
     ],
   ),
 );
+}
+
+Widget _welcomeCategoryImage() {
+  final asset = switch (_selectedCategory) {
+    'Comptabilité & fiscalité' => 'assets/images/comptabilite.jpg',
+    'BTS Comptabilité-Gestion' => 'assets/images/etudes.jpg',
+    'Secteur professionnel' => 'assets/images/secteur_pro.jpg',
+    _ => 'assets/images/comptabilite.jpg',
+  };
+  return AnimatedSwitcher(
+    duration: const Duration(milliseconds: 900),
+    switchInCurve: Curves.easeOutCubic,
+    transitionBuilder: (child, animation) => FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.22, 0),
+          end: Offset.zero,
+        ).animate(animation),
+        child: child,
+      ),
+    ),
+    child: Image.asset(
+      asset,
+      key: ValueKey(asset),
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+      alignment: Alignment.centerRight,
+      errorBuilder: (context, error, stackTrace) =>
+          const SizedBox.shrink(),
+    ),
+  );
 }
 
 Widget _buildWelcomeCard() {
@@ -1083,18 +1149,21 @@ Widget _buildWelcomeCard() {
             
             
             Positioned.fill(
+              child: _welcomeCategoryImage(),
+            ),
+            Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                     colors: [
-                      _accentColor.withValues(alpha: 0.98),
-                      _accentColor.withValues(alpha: 0.88),
-                      _accentColor.withValues(alpha: 0.40),
-                      Colors.transparent,
+                      _accentColor.withValues(alpha: 0.96),
+                      _accentColor.withValues(alpha: 0.82),
+                      _accentColor.withValues(alpha: 0.42),
+                      _accentColor.withValues(alpha: 0.12),
                     ],
-                    stops: const [0.0, 0.35, 0.68, 1.0],
+                    stops: const [0.0, 0.38, 0.72, 1.0],
                   ),
                 ),
               ),
@@ -1582,10 +1651,10 @@ class _HoverPillState extends State<HoverPill> {
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedScale(
         scale: _hovered ? 1.035 : 1,
-        duration: const Duration(milliseconds: 160),
+        duration: const Duration(milliseconds: 360),
         curve: Curves.easeOut,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 190),
+          duration: const Duration(milliseconds: 420),
           curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
             gradient: active
@@ -1683,10 +1752,10 @@ class _HoverArticleSurfaceState extends State<HoverArticleSurface> {
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedSlide(
         offset: _hovered ? const Offset(0, -0.012) : Offset.zero,
-        duration: const Duration(milliseconds: 190),
+        duration: const Duration(milliseconds: 420),
         curve: Curves.easeOutCubic,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 190),
+          duration: const Duration(milliseconds: 420),
           curve: Curves.easeOutCubic,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(17),
