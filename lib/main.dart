@@ -1179,40 +1179,30 @@ Widget _buildHeroArtwork(String asset, {double angle = 0, double scale = 1}) {
   );
 }
 
-Widget _buildHeroArtworkScene() {
+Widget _buildHeroArtworkScene({required bool compact}) {
   const accounting = 'assets/images/comptabilite.jpg';
   const studies = 'assets/images/etudes.jpg';
   const sector = 'assets/images/secteur_pro.jpg';
 
   if (_selectedCategory == 'Toutes') {
+    final cardWidth = compact ? 82.0 : 112.0;
+    final cardHeight = compact ? 132.0 : 170.0;
+    final step = compact ? 66.0 : 91.0;
     return SizedBox(
-      width: 290,
-      height: 218,
+      width: compact ? 218 : 300,
+      height: compact ? 174 : 220,
       child: Stack(
         clipBehavior: Clip.none,
-        alignment: Alignment.centerRight,
         children: [
-          Positioned(
-            right: 112,
-            top: 38,
-            width: 112,
-            height: 148,
-            child: _buildHeroArtwork(accounting, angle: -0.15, scale: 0.92),
-          ),
-          Positioned(
-            right: 54,
-            top: 18,
-            width: 126,
-            height: 174,
-            child: _buildHeroArtwork(studies, angle: -0.025, scale: 1),
-          ),
-          Positioned(
-            right: -2,
-            top: 34,
-            width: 126,
-            height: 164,
-            child: _buildHeroArtwork(sector, angle: 0.13, scale: 1.02),
-          ),
+          Positioned(left: 0, top: compact ? 25 : 32, width: cardWidth,
+            height: cardHeight,
+            child: _buildHeroArtwork(accounting, angle: -0.13, scale: 0.96)),
+          Positioned(left: step, top: compact ? 10 : 14, width: cardWidth,
+            height: cardHeight,
+            child: _buildHeroArtwork(studies, angle: 0, scale: 1)),
+          Positioned(left: step * 2, top: compact ? 25 : 32, width: cardWidth,
+            height: cardHeight,
+            child: _buildHeroArtwork(sector, angle: 0.13, scale: 0.98)),
         ],
       ),
     );
@@ -1226,43 +1216,33 @@ Widget _buildHeroArtworkScene() {
   };
 
   return SizedBox(
-    width: 290,
-    height: 230,
+    width: compact ? 218 : 300,
+    height: compact ? 190 : 230,
     child: Stack(
       clipBehavior: Clip.none,
       children: [
         Positioned(
-          right: 18,
-          top: 26,
-          width: 238,
-          height: 190,
+          right: compact ? 12 : 18, top: compact ? 26 : 28,
+          width: compact ? 176 : 238, height: compact ? 148 : 190,
           child: Transform.rotate(
-            angle: 0.10,
+            angle: 0.12,
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(26),
-                color: Colors.white.withValues(alpha: 0.10),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.26),
-                  width: 1.5,
-                ),
+                color: Colors.white.withValues(alpha: 0.12),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.34), width: 2),
                 boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.20),
-                    blurRadius: 26,
-                    offset: const Offset(0, 18),
-                  ),
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.28),
+                    blurRadius: 28, offset: const Offset(0, 18)),
                 ],
               ),
             ),
           ),
         ),
         Positioned(
-          right: -16,
-          top: 5,
-          width: 270,
-          height: 218,
-          child: _buildHeroArtwork(asset, angle: -0.055, scale: 1.02),
+          right: compact ? -2 : -14, top: compact ? 4 : 2,
+          width: compact ? 202 : 270, height: compact ? 184 : 218,
+          child: _buildHeroArtwork(asset, angle: -0.07, scale: 1.03),
         ),
       ],
     ),
@@ -1377,7 +1357,7 @@ Widget _buildWelcomeCard() {
                     },
                     child: KeyedSubtree(
                       key: ValueKey('scene-$_selectedCategory'),
-                      child: _buildHeroArtworkScene(),
+                      child: _buildHeroArtworkScene(compact: compact),
                     ),
                   ),
                 ),
