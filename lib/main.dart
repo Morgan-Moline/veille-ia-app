@@ -897,7 +897,22 @@ onPressed: _loading
 body: Stack(
   children: [
     Positioned.fill(
-      child: _buildCategoryBackgroundImage(),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 520),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 1.025, end: 1).animate(animation),
+            child: child,
+          ),
+        ),
+        child: SizedBox.expand(
+          key: ValueKey(_selectedCategory),
+          child: _buildCategoryBackgroundImage(),
+        ),
+      ),
     ),
     Positioned.fill(
       child: Container(
@@ -910,7 +925,24 @@ body: Stack(
 
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
           children: [
-            _buildWelcomeCard(),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 380),
+              switchInCurve: Curves.easeOutCubic,
+              transitionBuilder: (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.035),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+              ),
+              child: KeyedSubtree(
+                key: ValueKey(_selectedCategory),
+                child: _buildWelcomeCard(),
+              ),
+            ),
             const SizedBox(height: 20),
             const Text(
               'Mes thèmes de veille',
@@ -975,7 +1007,24 @@ body: Stack(
                 onPressed: _refresh,
               )
             else
-              ...visible.map(_buildArticleCard),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 360),
+                switchInCurve: Curves.easeOutCubic,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 0.025),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                ),
+                child: Column(
+                  key: ValueKey('$_selectedCategory-$_selectedFilter-${visible.length}'),
+                  children: visible.map(_buildArticleCard).toList(),
+                ),
+              ),
             if (_error != null && _articles.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
@@ -1135,38 +1184,103 @@ Widget _buildWelcomeCard() {
 
   Widget _buildCategorySelector() {
     final filters = ['Tous', 'Non lus', 'Favoris', 'Lus'];
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...filters.map(
-  (filter) => ChoiceChip(
-    label: Text(filter),
-    selected: _selectedFilter == filter,
-    onSelected: (_) => setState(() => _selectedFilter = filter),
-  ),
-),
-        _categoryChip('Toutes', Icons.dashboard_outlined),
-        ...categories.map(
-          (category) => _categoryChip(category.name, category.icon),
+        Text(
+          'AFFICHAGE',
+          style: TextStyle(
+            fontSize: 10,
+            letterSpacing: 1.4,
+            fontWeight: FontWeight.w800,
+            color: Colors.blueGrey.shade500,
+          ),
+        ),
+        const SizedBox(height: 9),
+        Wrap(
+          spacing: 9,
+          runSpacing: 9,
+          children: filters.map((filter) {
+            final selected = _selectedFilter == filter;
+            return _buildHoverPill(
+              label: filter,
+              selected: selected,
+              accent: _accentColor,
+              secondary: _secondaryColor,
+              icon: switch (filter) {
+                'Favoris' => Icons.star_outline_rounded,
+                'Non lus' => Icons.mark_email_unread_outlined,
+                'Lus' => Icons.visibility_outlined,
+                _ => Icons.view_stream_outlined,
+              },
+              onTap: () => setState(() => _selectedFilter = filter),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'THÈMES',
+          style: TextStyle(
+            fontSize: 10,
+            letterSpacing: 1.4,
+            fontWeight: FontWeight.w800,
+            color: Colors.blueGrey.shade500,
+          ),
+        ),
+        const SizedBox(height: 9),
+        Wrap(
+          spacing: 9,
+          runSpacing: 9,
+          children: [
+            _categoryChip('Toutes', Icons.dashboard_outlined),
+            ...categories.map(
+              (category) => _categoryChip(category.name, category.icon),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  
-Widget _categoryChip(String name, IconData icon) {
-  final selected = _selectedCategory == name;
+  Widget _buildHoverPill({
+    required String label,
+    required bool selected,
+    required Color accent,
+    required Color secondary,
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return HoverPill(
+      label: label,
+      icon: icon,
+      selected: selected,
+      accent: accent,
+      secondary: secondary,
+      onTap: onTap,
+    );
+  }
 
-  return FilterChip(
-    selectedColor: _accentColor.withValues(alpha: 0.15),
-    checkmarkColor: _accentColor,
-    selected: selected,
-    avatar: Icon(icon, size: 18),
-    label: Text(_displayCategoryName(name)),
-    onSelected: (_) => setState(() => _selectedCategory = name),
-  );
-}
+  Widget _categoryChip(String name, IconData icon) {
+    final selected = _selectedCategory == name;
+    final accent = name == 'Toutes'
+        ? const Color(0xFF176B5B)
+        : _categoryAccentColor(name);
+    final secondary = name == 'Toutes'
+        ? const Color(0xFF2468B4)
+        : _categorySecondaryColor(name);
+
+    return _buildHoverPill(
+      label: _displayCategoryName(name),
+      icon: icon,
+      selected: selected,
+      accent: accent,
+      secondary: secondary,
+      onTap: () {
+        if (_selectedCategory == name) return;
+        setState(() => _selectedCategory = name);
+      },
+    );
+  }
 
 
  
@@ -1174,7 +1288,8 @@ Widget _buildArticleCard(VeilleArticle article) {
   final categoryColor = _categoryAccentColor(article.category);
   final categorySecondary = _categorySecondaryColor(article.category);
 
-  return Card(
+  return HoverArticleSurface(
+    child: Card(
     margin: const EdgeInsets.only(bottom: 12),
     elevation: 0,
     color: Colors.white.withValues(alpha: 0.82),
@@ -1387,7 +1502,7 @@ Widget _buildArticleCard(VeilleArticle article) {
         ),
       ),
     ),
-  );
+  ));
 }
 
 
@@ -1428,6 +1543,165 @@ Widget _buildArticleCard(VeilleArticle article) {
   }
 }
 
+
+class HoverPill extends StatefulWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final Color accent;
+  final Color secondary;
+  final VoidCallback onTap;
+
+  const HoverPill({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.accent,
+    required this.secondary,
+    required this.onTap,
+  });
+
+  @override
+  State<HoverPill> createState() => _HoverPillState();
+}
+
+class _HoverPillState extends State<HoverPill> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final active = widget.selected;
+    final tint = active || _hovered
+        ? widget.accent
+        : const Color(0xFF526174);
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedScale(
+        scale: _hovered ? 1.035 : 1,
+        duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOut,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 190),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            gradient: active
+                ? LinearGradient(
+                    colors: [widget.accent, widget.secondary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            color: active ? null : Colors.white.withValues(
+                alpha: _hovered ? 0.98 : 0.84,
+              ),
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(
+              color: active
+                  ? widget.accent.withValues(alpha: 0.85)
+                  : widget.accent.withValues(alpha: _hovered ? 0.55 : 0.16),
+              width: active ? 1.2 : 1,
+            ),
+            boxShadow: [
+              if (active || _hovered)
+                BoxShadow(
+                  color: widget.accent.withValues(
+                    alpha: active ? 0.20 : 0.12,
+                  ),
+                  blurRadius: active ? 13 : 9,
+                  offset: const Offset(0, 4),
+                ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(13),
+              onTap: widget.onTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 10,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      widget.icon,
+                      size: 17,
+                      color: active ? Colors.white : tint,
+                    ),
+                    const SizedBox(width: 7),
+                    Text(
+                      widget.label,
+                      style: TextStyle(
+                        color: active ? Colors.white : const Color(0xFF263445),
+                        fontSize: 12.5,
+                        fontWeight: active || _hovered
+                            ? FontWeight.w700
+                            : FontWeight.w600,
+                      ),
+                    ),
+                    if (active) ...[
+                      const SizedBox(width: 5),
+                      const Icon(
+                        Icons.check_rounded,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class HoverArticleSurface extends StatefulWidget {
+  final Widget child;
+
+  const HoverArticleSurface({super.key, required this.child});
+
+  @override
+  State<HoverArticleSurface> createState() => _HoverArticleSurfaceState();
+}
+
+class _HoverArticleSurfaceState extends State<HoverArticleSurface> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 190),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0, _hovered ? -3 : 0, 0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(17),
+          boxShadow: [
+            if (_hovered)
+              BoxShadow(
+                color: Theme.of(context).colorScheme.primary
+                    .withValues(alpha: 0.13),
+                blurRadius: 18,
+                offset: const Offset(0, 7),
+              ),
+          ],
+        ),
+        child: widget.child,
+      ),
+    );
+  }
+}
 
 class RevisionQuestion {
   final String question;
