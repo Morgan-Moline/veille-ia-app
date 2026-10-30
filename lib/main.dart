@@ -916,7 +916,7 @@ body: Stack(
     ),
     Positioned.fill(
       child: Container(
-        color: Colors.white.withValues(alpha: 0.62),
+        color: Colors.white.withValues(alpha: 0.76),
       ),
     ),
     RefreshIndicator(
@@ -1040,14 +1040,14 @@ body: Stack(
                 child: LayoutBuilder(
                   key: ValueKey('$_selectedCategory-$_selectedFilter-${visible.length}'),
                   builder: (context, constraints) {
-                    final columns = constraints.maxWidth >= 900 ? 2 : 1;
-                    final spacing = 14.0;
+                    final columns = constraints.maxWidth >= 620 ? 2 : 1;
+                    final spacing = 18.0;
                     final cardWidth = columns == 1
                         ? constraints.maxWidth
                         : (constraints.maxWidth - spacing) / 2;
                     return Wrap(
                       spacing: spacing,
-                      runSpacing: 8,
+                      runSpacing: 18,
                       children: visible.map((article) {
                         return SizedBox(
                           width: cardWidth,
@@ -1142,28 +1142,84 @@ Widget _buildWelcomeCard() {
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
+      child: Stack(
+          clipBehavior: Clip.none,
           children: [
-            
-            
             Positioned.fill(
-              child: _welcomeCategoryImage(),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: _accentColor),
+                ),
+              ),
             ),
             Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      _accentColor.withValues(alpha: 0.96),
-                      _accentColor.withValues(alpha: 0.82),
-                      _accentColor.withValues(alpha: 0.42),
-                      _accentColor.withValues(alpha: 0.12),
-                    ],
-                    stops: const [0.0, 0.38, 0.72, 1.0],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        _accentColor.withValues(alpha: 0.98),
+                        _accentColor.withValues(alpha: 0.88),
+                        _accentColor.withValues(alpha: 0.48),
+                        _accentColor.withValues(alpha: 0.10),
+                      ],
+                      stops: const [0.0, 0.36, 0.70, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: -22,
+              top: -12,
+              bottom: -10,
+              width: 300,
+              child: IgnorePointer(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 1050),
+                  switchInCurve: Curves.easeOutCubic,
+                  transitionBuilder: (child, animation) {
+                    final eased = CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    );
+                    return FadeTransition(
+                      opacity: eased,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(-0.65, 0),
+                          end: Offset.zero,
+                        ).animate(eased),
+                        child: AnimatedBuilder(
+                          animation: eased,
+                          child: child,
+                          builder: (context, child) => Transform(
+                            alignment: Alignment.center,
+                            transform: Matrix4.identity()
+                              ..setEntry(3, 2, 0.0018)
+                              ..rotateY((1 - eased.value) * 0.22)
+                              ..scale(0.82 + eased.value * 0.18),
+                            child: child,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                  child: Image.asset(
+                    _selectedCategory == 'Secteur professionnel'
+                        ? 'assets/images/secteur_pro.jpg'
+                        : _selectedCategory == 'BTS Comptabilité-Gestion'
+                            ? 'assets/images/etudes.jpg'
+                            : 'assets/images/comptabilite.jpg',
+                    key: ValueKey('hero-$_selectedCategory'),
+                    fit: BoxFit.contain,
+                    alignment: Alignment.centerRight,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const SizedBox.shrink(),
                   ),
                 ),
               ),
@@ -1176,7 +1232,7 @@ Widget _buildWelcomeCard() {
                   Text(
                     'BONJOUR MORGAN',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.82),
+                      color: Colors.white.withValues(alpha: 0.70),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 2,
@@ -1359,7 +1415,7 @@ Widget _buildArticleCard(VeilleArticle article) {
 
   return HoverArticleSurface(
     child: Card(
-    margin: const EdgeInsets.only(bottom: 12),
+    margin: EdgeInsets.zero,
     elevation: 0,
     color: Colors.white.withValues(alpha: 0.82),
     shape: RoundedRectangleBorder(
