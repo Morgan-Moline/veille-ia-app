@@ -1119,192 +1119,387 @@ Widget _welcomeCategoryImage() {
   );
 }
 
-Widget _buildWelcomeCard() {
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            _accentColor,
-            Color.lerp(_accentColor, _secondaryColor, 0.45)!,
+Widget _buildHeroArtwork(String asset, {double angle = 0, double scale = 1}) {
+  return Transform.rotate(
+    angle: angle,
+    child: Transform.scale(
+      scale: scale,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.72),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.38),
+              blurRadius: 24,
+              spreadRadius: 1,
+              offset: const Offset(-8, 16),
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.16),
+              blurRadius: 8,
+              offset: const Offset(2, -3),
+            ),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: _accentColor.withValues(alpha: 0.22),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(
+                asset,
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+                errorBuilder: (context, error, stackTrace) =>
+                    const ColoredBox(color: Color(0x33202020)),
+              ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.18),
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.20),
+                    ],
+                    stops: const [0, 0.42, 1],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildHeroArtworkScene() {
+  const accounting = 'assets/images/comptabilite.jpg';
+  const studies = 'assets/images/etudes.jpg';
+  const sector = 'assets/images/secteur_pro.jpg';
+
+  if (_selectedCategory == 'Toutes') {
+    return SizedBox(
+      width: 290,
+      height: 218,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.centerRight,
+        children: [
+          Positioned(
+            right: 112,
+            top: 38,
+            width: 112,
+            height: 148,
+            child: _buildHeroArtwork(accounting, angle: -0.15, scale: 0.92),
+          ),
+          Positioned(
+            right: 54,
+            top: 18,
+            width: 126,
+            height: 174,
+            child: _buildHeroArtwork(studies, angle: -0.025, scale: 1),
+          ),
+          Positioned(
+            right: -2,
+            top: 34,
+            width: 126,
+            height: 164,
+            child: _buildHeroArtwork(sector, angle: 0.13, scale: 1.02),
           ),
         ],
       ),
-      child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned.fill(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(color: _accentColor),
+    );
+  }
+
+  final asset = switch (_selectedCategory) {
+    'Comptabilité & fiscalité' => accounting,
+    'BTS Comptabilité-Gestion' => studies,
+    'Secteur professionnel' => sector,
+    _ => accounting,
+  };
+
+  return SizedBox(
+    width: 290,
+    height: 230,
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          right: 18,
+          top: 26,
+          width: 238,
+          height: 190,
+          child: Transform.rotate(
+            angle: 0.10,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(26),
+                color: Colors.white.withValues(alpha: 0.10),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.26),
+                  width: 1.5,
                 ),
-              ),
-            ),
-            Positioned.fill(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        _accentColor.withValues(alpha: 0.98),
-                        _accentColor.withValues(alpha: 0.88),
-                        _accentColor.withValues(alpha: 0.48),
-                        _accentColor.withValues(alpha: 0.10),
-                      ],
-                      stops: const [0.0, 0.36, 0.70, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              right: -22,
-              top: -12,
-              bottom: -10,
-              width: 300,
-              child: IgnorePointer(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 1050),
-                  switchInCurve: Curves.easeOutCubic,
-                  transitionBuilder: (child, animation) {
-                    final eased = CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    );
-                    return FadeTransition(
-                      opacity: eased,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(-0.65, 0),
-                          end: Offset.zero,
-                        ).animate(eased),
-                        child: AnimatedBuilder(
-                          animation: eased,
-                          child: child,
-                          builder: (context, child) => Transform(
-                            alignment: Alignment.center,
-                            transform: Matrix4.identity()
-                              ..setEntry(3, 2, 0.0018)
-                              ..rotateY((1 - eased.value) * 0.22)
-                              ..scale(0.82 + eased.value * 0.18),
-                            child: child,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  child: Image.asset(
-                    _selectedCategory == 'Secteur professionnel'
-                        ? 'assets/images/secteur_pro.jpg'
-                        : _selectedCategory == 'BTS Comptabilité-Gestion'
-                            ? 'assets/images/etudes.jpg'
-                            : 'assets/images/comptabilite.jpg',
-                    key: ValueKey('hero-$_selectedCategory'),
-                    fit: BoxFit.contain,
-                    alignment: Alignment.centerRight,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const SizedBox.shrink(),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'BONJOUR MORGAN',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.70),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Ta veille, en un coup d’oeil.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Comptabilité, études et actualités de ton secteur professionnel.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      height: 1.4,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 11,
-                      vertical: 7,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.22),
-                      ),
-                    ),
-                    child: Text(
-                      _categoryBackgroundLabel,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.7,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  OutlinedButton.icon(
-                    onPressed: _refresh,
-                    icon: const Icon(Icons.sync),
-                    label: const Text('Actualiser ma veille'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white70),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.20),
+                    blurRadius: 26,
+                    offset: const Offset(0, 18),
                   ),
                 ],
               ),
             ),
-          ],
+          ),
         ),
-    );
-  }
+        Positioned(
+          right: -16,
+          top: 5,
+          width: 270,
+          height: 218,
+          child: _buildHeroArtwork(asset, angle: -0.055, scale: 1.02),
+        ),
+      ],
+    ),
+  );
+}
 
-
+Widget _buildWelcomeCard() {
+  return Container(
+    width: double.infinity,
+    margin: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [
+          _accentColor,
+          Color.lerp(_accentColor, _secondaryColor, 0.48)!,
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(26),
+      boxShadow: [
+        BoxShadow(
+          color: _accentColor.withValues(alpha: 0.30),
+          blurRadius: 26,
+          offset: const Offset(0, 12),
+        ),
+      ],
+    ),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 520;
+        return SizedBox(
+          height: compact ? 258 : 276,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(26),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        right: -72,
+                        top: -105,
+                        child: Container(
+                          width: 290,
+                          height: 290,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                _accentColor.withValues(alpha: 0.98),
+                                _accentColor.withValues(alpha: 0.94),
+                                _accentColor.withValues(alpha: 0.58),
+                                _accentColor.withValues(alpha: 0.12),
+                              ],
+                              stops: const [0, 0.38, 0.72, 1],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                right: compact ? -30 : -12,
+                top: 18,
+                bottom: 8,
+                width: compact ? 218 : 300,
+                child: IgnorePointer(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 1150),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) {
+                      final eased = CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutBack,
+                      );
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(-0.72, 0.10),
+                            end: Offset.zero,
+                          ).animate(eased),
+                          child: AnimatedBuilder(
+                            animation: eased,
+                            child: child,
+                            builder: (context, child) => Transform(
+                              alignment: Alignment.center,
+                              transform: Matrix4.identity()
+                                ..setEntry(3, 2, 0.0022)
+                                ..rotateY((1 - eased.value) * 0.30)
+                                ..rotateZ((1 - eased.value) * -0.035)
+                                ..scale(0.76 + eased.value * 0.24),
+                              child: child,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    child: KeyedSubtree(
+                      key: ValueKey('scene-$_selectedCategory'),
+                      child: _buildHeroArtworkScene(),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 22,
+                top: 22,
+                bottom: 18,
+                width: constraints.maxWidth * (compact ? 0.66 : 0.59),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'BONJOUR MORGAN',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.76),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 9),
+                    Text(
+                      'Ta veille, en un coup d’œil.',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: compact ? 21 : 25,
+                        height: 1.08,
+                        fontWeight: FontWeight.w900,
+                        shadows: const [
+                          Shadow(
+                            color: Color(0x33000000),
+                            blurRadius: 12,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 9),
+                    Text(
+                      'Comptabilité, études et actualités de ton secteur professionnel.',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.94),
+                        fontSize: compact ? 11 : 13,
+                        height: 1.35,
+                      ),
+                    ),
+                    const SizedBox(height: 13),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.17),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.30),
+                        ),
+                      ),
+                      child: Text(
+                        _categoryBackgroundLabel,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.55,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _refresh,
+                      icon: const Icon(Icons.sync, size: 16),
+                      label: const Text('Actualiser'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.72),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 9,
+                        ),
+                        visualDensity: VisualDensity.compact,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Positioned(
+                right: 18,
+                bottom: 12,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        blurRadius: 12,
+                        spreadRadius: 3,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+}
 
   Widget _buildCategorySelector() {
     final filters = ['Tous', 'Non lus', 'Favoris', 'Lus'];
