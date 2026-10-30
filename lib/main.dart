@@ -381,9 +381,7 @@ Widget _buildCategoryBackgroundImage() {
   String? _error;
   DateTime? _lastRefresh;
 
-  final Map<String, String> _summaries = {};
-  final Set<String> _summarizingLinks = {};
-  
+
 String _displayCategoryName(String name) {
   switch (name) {
     case 'Comptabilité & fiscalité':
@@ -828,76 +826,6 @@ List<VeilleArticle> get _visibleArticles {
   }
 
 
-Future<void> _summarizeArticle(VeilleArticle article) async {
-  setState(() {
-    _summarizingLinks.add(article.link);
-  });
-
-  try {
-    final prompt = '''
-Tu es un assistant pédagogique français spécialisé en BTS Comptabilité-Gestion.
-
-Analyse uniquement les informations fournies ci-dessous.
-Ne fabrique aucun fait. Si les informations sont insuffisantes,
-signale-le clairement.
-
-Titre : ${article.title}
-Source : ${article.source}
-Date : ${_formatDate(article.publishedAt)}
-Extrait disponible : ${article.description}
-
-Rédige en français :
-1. Résumé simple en 3 phrases maximum.
-2. Trois points essentiels à retenir.
-3. Intérêt pour le BTS CG ou le travail en entreprise.
-4. Les éléments qui restent à vérifier dans l'article original.
-
-Précise que ton analyse repose sur le titre et l'extrait fourni,
-et non nécessairement sur l'article intégral.
-''';
-
-    final response = await http
-        .post(
-          Uri.parse('http://127.0.0.1:11434/api/generate'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'model': 'qwen2.5:7b',
-            'prompt': prompt,
-            'stream': false,
-          }),
-        )
-        .timeout(const Duration(seconds: 120));
-
-    if (response.statusCode != 200) {
-      throw Exception('Ollama a répondu : ${response.statusCode}');
-    }
-
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
-    final summary = data['response'] as String?;
-
-    if (summary == null || summary.trim().isEmpty) {
-      throw Exception('Le modèle n’a retourné aucun résumé.');
-    }
-
-    if (!mounted) return;
-    setState(() {
-      _summaries[article.link] = summary.trim();
-    });
-  } catch (e) {
-    if (mounted) {
-      _showMessage(
-        'Résumé impossible. Vérifie qu’Ollama fonctionne sur ce PC.',
-      );
-    }
-  } finally {
-    if (mounted) {
-      setState(() {
-        _summarizingLinks.remove(article.link);
-      });
-    }
-  }
-}
-
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -1060,9 +988,9 @@ body: Stack(
             
           
             Text(
-              'Les articles proviennent de flux Google Actualités. '
-              'Vérifie les informations importantes auprès de la source '
-              'originale. Cette version ne génère pas encore de résumés IA.',
+              'Les résumés sont générés par Gemini lors de l’actualisation '
+              'automatique de la veille. Vérifie toujours les informations '
+              'importantes auprès de la source originale.',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey.shade600,
@@ -1403,12 +1331,29 @@ Widget _buildArticleCard(VeilleArticle article) {
                 ),
               )
             else
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: () => _summarizeArticle(article),
-                  icon: const Icon(Icons.auto_awesome),
-                  label: const Text('Générer un résumé IA'),
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(top: 12, bottom: 12),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: categoryColor.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: categoryColor.withValues(alpha: 0.16),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.auto_awesome_outlined, color: categoryColor),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Résumé Gemini en attente. Il sera ajouté lors d’une prochaine actualisation de la veille.',
+                        style: TextStyle(height: 1.4),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
