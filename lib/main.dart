@@ -1681,23 +1681,27 @@ class _HoverArticleSurfaceState extends State<HoverArticleSurface> {
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
+      child: AnimatedSlide(
+        offset: _hovered ? const Offset(0, -0.012) : Offset.zero,
         duration: const Duration(milliseconds: 190),
         curve: Curves.easeOutCubic,
-        transform: Matrix4.translationValues(0, _hovered ? -3 : 0, 0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(17),
-          boxShadow: [
-            if (_hovered)
-              BoxShadow(
-                color: Theme.of(context).colorScheme.primary
-                    .withValues(alpha: 0.13),
-                blurRadius: 18,
-                offset: const Offset(0, 7),
-              ),
-          ],
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 190),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(17),
+            boxShadow: [
+              if (_hovered)
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.primary
+                      .withValues(alpha: 0.13),
+                  blurRadius: 18,
+                  offset: const Offset(0, 7),
+                ),
+            ],
+          ),
+          child: widget.child,
         ),
-        child: widget.child,
       ),
     );
   }
