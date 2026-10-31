@@ -533,8 +533,8 @@ String get _categoryBackgroundLabel {
     super.initState();
     _tractorController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 5200),
-    )..repeat(reverse: true);
+      duration: const Duration(milliseconds: 1250),
+    );
     _loadPreferences();
     _refresh();
   }
@@ -1226,30 +1226,34 @@ Widget _buildHeroArtworkScene({required bool compact}) {
       child: AnimatedBuilder(
         animation: _tractorController,
         builder: (context, child) {
-          final t = Curves.easeInOutSine.transform(_tractorController.value);
-          final drift = (t - 0.5) * (compact ? 15 : 22);
-          final bob = 1.0 + (0.012 * (1 - (2 * t - 1).abs()));
+          final progress = Curves.easeOutCubic.transform(
+            _tractorController.value,
+          );
+          final slide = 1 - progress;
+          final angle = -0.10 * slide;
+          final scale = 0.48 + (0.52 * progress);
           return Stack(
             clipBehavior: Clip.none,
             children: [
+              // Petite fumée qui apparaît derrière le tracteur à son arrivée.
               Positioned(
-                left: compact ? 42 : 58,
-                top: compact ? 20 : 24,
+                left: compact ? 26 : 38,
+                top: compact ? 40 : 48,
                 child: Opacity(
-                  opacity: 0.18 + (0.20 * (1 - t)),
-                  child: Transform.scale(
-                    scale: 0.72 + (0.30 * t),
+                  opacity: (progress * 0.55).clamp(0.0, 0.55),
+                  child: Transform.translate(
+                    offset: Offset(-18 * progress, -10 * progress),
                     child: Container(
-                      width: compact ? 15 : 19,
-                      height: compact ? 15 : 19,
+                      width: compact ? 19 : 25,
+                      height: compact ? 19 : 25,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.72),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.white.withValues(alpha: 0.40),
-                            blurRadius: 12,
-                            spreadRadius: 4,
+                            color: Colors.white.withValues(alpha: 0.42),
+                            blurRadius: 13,
+                            spreadRadius: 3,
                           ),
                         ],
                       ),
@@ -1259,17 +1263,25 @@ Widget _buildHeroArtworkScene({required bool compact}) {
               ),
               Positioned.fill(
                 child: Transform.translate(
-                  offset: Offset(drift, 2.5 * (1 - (2 * t - 1).abs())),
-                  child: Transform.scale(
-                    scale: bob,
-                    alignment: Alignment.bottomCenter,
-                    child: Image.asset(
-                      'Design sans titre.png',
-                      fit: BoxFit.contain,
+                  // Entrée en diagonale inspirée de loc-car : arrivée,
+                  // zoom et légère rotation, puis arrêt devant le cadre.
+                  offset: Offset(
+                    (compact ? 205 : 285) * slide,
+                    -(compact ? 155 : 215) * slide,
+                  ),
+                  child: Transform.rotate(
+                    angle: angle,
+                    child: Transform.scale(
+                      scale: scale,
                       alignment: Alignment.center,
-                      filterQuality: FilterQuality.high,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox.shrink(),
+                      child: Image.asset(
+                        'Design sans titre.png',
+                        fit: BoxFit.contain,
+                        alignment: Alignment.center,
+                        filterQuality: FilterQuality.high,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox.shrink(),
+                      ),
                     ),
                   ),
                 ),
@@ -1650,6 +1662,9 @@ Widget _buildWelcomeCard() {
       onTap: () {
         if (_selectedCategory == name) return;
         setState(() => _selectedCategory = name);
+        if (name == 'Secteur professionnel') {
+          _tractorController.forward(from: 0);
+        }
       },
     );
   }
