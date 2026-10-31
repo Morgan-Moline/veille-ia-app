@@ -312,7 +312,8 @@ class VeilleHomePage extends StatefulWidget {
 }
 
 
-class _VeilleHomePageState extends State<VeilleHomePage> {
+class _VeilleHomePageState extends State<VeilleHomePage> with SingleTickerProviderStateMixin {
+  late final AnimationController _tractorController;
   
   
 Widget _buildCategoryBackgroundImage() {
@@ -530,8 +531,18 @@ String get _categoryBackgroundLabel {
   @override
   void initState() {
     super.initState();
+    _tractorController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 5200),
+    )..repeat(reverse: true);
     _loadPreferences();
     _refresh();
+  }
+
+  @override
+  void dispose() {
+    _tractorController.dispose();
+    super.dispose();
   }
 
   
@@ -1087,6 +1098,68 @@ body: Stack(
 }
 
 Widget _welcomeCategoryImage() {
+  if (_selectedCategory == 'Secteur professionnel') {
+    return SizedBox(
+      width: compact ? 218 : 300,
+      height: compact ? 190 : 230,
+      child: AnimatedBuilder(
+        animation: _tractorController,
+        builder: (context, child) {
+          final t = Curves.easeInOutSine.transform(_tractorController.value);
+          final drift = (t - 0.5) * (compact ? 15 : 22);
+          final bob = 1.0 + (0.012 * (1 - (2 * t - 1).abs()));
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: compact ? 42 : 58,
+                top: compact ? 20 : 24,
+                child: Opacity(
+                  opacity: 0.18 + (0.20 * (1 - t)),
+                  child: Transform.scale(
+                    scale: 0.72 + (0.30 * t),
+                    child: Container(
+                      width: compact ? 15 : 19,
+                      height: compact ? 15 : 19,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.72),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.white.withValues(alpha: 0.40),
+                            blurRadius: 12,
+                            spreadRadius: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned.fill(
+                child: Transform.translate(
+                  offset: Offset(drift, 2.5 * (1 - (2 * t - 1).abs())),
+                  child: Transform.scale(
+                    scale: bob,
+                    alignment: Alignment.bottomCenter,
+                    child: Image.asset(
+                      'Design sans titre.png',
+                      fit: BoxFit.contain,
+                      alignment: Alignment.center,
+                      filterQuality: FilterQuality.high,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   final asset = switch (_selectedCategory) {
     'Comptabilité & fiscalité' => 'assets/images/comptabilite.jpg',
     'BTS Comptabilité-Gestion' => 'assets/images/etudes.jpg',
