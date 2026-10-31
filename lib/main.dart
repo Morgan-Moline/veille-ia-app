@@ -1221,8 +1221,8 @@ Widget _buildHeroArtworkScene({required bool compact}) {
 
   if (_selectedCategory == 'Secteur professionnel') {
     return SizedBox(
-      width: compact ? 218 : 300,
-      height: compact ? 190 : 230,
+      width: compact ? 330 : 430,
+      height: compact ? 258 : 292,
       child: AnimatedBuilder(
         animation: _tractorController,
         builder: (context, child) {
@@ -1231,7 +1231,7 @@ Widget _buildHeroArtworkScene({required bool compact}) {
           );
           final slide = 1 - progress;
           final angle = -0.10 * slide;
-          final scale = 0.48 + (0.52 * progress);
+          final scale = 0.62 + (0.58 * progress);
           return Stack(
             clipBehavior: Clip.none,
             children: [
@@ -1266,8 +1266,8 @@ Widget _buildHeroArtworkScene({required bool compact}) {
                   // Entrée en diagonale inspirée de loc-car : arrivée,
                   // zoom et légère rotation, puis arrêt devant le cadre.
                   offset: Offset(
-                    (compact ? 205 : 285) * slide,
-                    -(compact ? 155 : 215) * slide,
+                    (compact ? 250 : 330) * slide,
+                    -(compact ? 190 : 250) * slide,
                   ),
                   child: Transform.rotate(
                     angle: angle,
@@ -1403,10 +1403,14 @@ Widget _buildWelcomeCard() {
                 ),
               ),
               Positioned(
-                right: compact ? -30 : -12,
-                top: 18,
-                bottom: 8,
-                width: compact ? 218 : 300,
+                right: _selectedCategory == 'Secteur professionnel'
+                    ? (compact ? -92 : -118)
+                    : (compact ? -30 : -12),
+                top: _selectedCategory == 'Secteur professionnel' ? -8 : 18,
+                bottom: _selectedCategory == 'Secteur professionnel' ? -18 : 8,
+                width: _selectedCategory == 'Secteur professionnel'
+                    ? (compact ? 330 : 430)
+                    : (compact ? 218 : 300),
                 child: IgnorePointer(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 1150),
